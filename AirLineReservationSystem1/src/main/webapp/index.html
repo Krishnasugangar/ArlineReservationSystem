@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+  <h1>Book Your Flight</h1>
+    <form id="bookFlight">
+        <label for="origin">Origin:</label>
+        <input type="text" id="origin" name="origin" required><br><br>
+        <label for="destination">Destination:</label>
+        <input type="text" id="destination" name="destination" required><br><br>
+        <button type="button" onclick="searchFlights()">Search Flights</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+    function searchFlights() {
+        const origin = document.getElementById('origin').value;
+        const destination = document.getElementById('destination').value;
+
+        fetch(`/searchFlights?origin=${origin}&destination=${destination}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '<h2>Available Flights</h2>';
+                data.forEach(flight => {
+                    resultsDiv.innerHTML += `
+                        <p>
+                            Flight ID: ${flight.flightId} <br>
+                            Airline: ${flight.airline} <br>
+                            Departure: ${flight.departureTime} <br>
+                            Arrival: ${flight.arrivalTime} <br>
+                            Available Seats: ${flight.availableSeats} <br>
+                            <button onclick="bookFlight(${flight.flightId})">Book</button>
+                        </p>
+                    `;
+                });
+            });
+    }
+
+    function bookFlight(flightId) {
+        const customerName = prompt('Enter your name:');
+        const customerEmail = prompt('Enter your email:');
+        const seatClass = prompt('Enter seat class (Economy/Business):');
+
+        fetch('/bookFlight', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                flightId,
+                customerName,
+                customerEmail,
+                seatClass,
+                status: 'Booked'
+            })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Flight booked successfully!');
+              } else {
+                  alert('Failed to book flight.');
+              }
+          });
+    }
+
+    </script>
+</body>
+</html>
